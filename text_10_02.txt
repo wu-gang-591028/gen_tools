@@ -1,0 +1,70 @@
+                   
+  /* 
+  名称: 定位配套的括号_基础(f_PairSign).
+  功能: 在一段文本中, 找最外层括号的结止点.
+  例子:
+  *. 在文本"create table abc (...) erty"中, 找")"所在的位置.
+  *. 在这一段文本中, "create table tSysDotParam -- 系统参数表 Key:SysDPV (...) ABC ", 取到" ABC"之前.
+  缘由:
+      要在多个表定义文本中, 分离出一个一个的单独的表定义文本, 进行处理. 在主控程序中, 截取以 create table ...,
+      constraint primary key ... 开头的文本, 然后传到这里处理, 找到最外层的配套的右括号的位置. 在外面, 切下这段文本
+      进行处理.
+  功能:
+      在一段文本(ar_cText)中, 寻找一个最外层配套的右括号的位置(下一个字符的位置). 用于切割这样的文本: "create table xxx (...)"
+  描述:
+   *. 配套的括号可以是"(), [], <>, {}"等. 传入左括号, 寻找对应的右括号的下一个字符的位置.
+   *. 这里找括号配套的方法有点象下推机的用法.
+  关键字: 下推机 分离 数据驱动
+  注1: ls_RegExp.lastIndex 是下一次查找的起点, 正好是本次查找的末点(匹配字符串的下一个字符的位置).
+  注2: "[\\" + ar_cSignA + "\\" + ls_cSignB + "]" 中, "\\"是必须的. 在形成字符串时, 两个"\"变成一个.
+  注3: 利用数据驱动. ls_arrA = ['(', '[', '{', '<'], la_arrB = [')', ']', '}', '>']; ls_cSignB = la_arrB[ls_arrA.indexOf(ar_cSignA)];
+       数组对象有一个 indexOf() 方法, 但它是精确比较. 是用 "===" 进行比较的.
+  注4: 加一个参数, 指定是否抛出异常. 在一般情况下, 出现异常都要抛出. 但特殊情况下想要不抛出, 就要专门指定一下.
+  其它:
+  *. 错误信息包含在返回值中. 当 ls_iIndex = -1 时, 有两个意思, 一是没有"(<[{", 二是最外层的括号不配套.
+  *. JS 中没有一般语言中的 ar_A = 8 这样的缺省参数设置语法. 它只能利用传入值是否为 undefined 值来判别. 可以这样 ar_A = ar_A || 8;
+  *. 在 ls_RegExp.exec(ar_cText) 中, 即使最后的匹配表达式已经到达串尾, 其 ls_RegExp.lastIndex 也指向后一个字符(不会指空)
+     , 其指向可能已经不在当前字符串中了.
+  后记:
+  *. 需要什么功能, 就做什么, 不要扩展的太抽象.
+  */
+  function f_PairSign(
+    ar_cText,
+    ar_cSignA, // '(', '[', '{', '<'. 缺省是 '('
+    ar_hidden_error // 出错后, 是否隐藏. undefined 是不隐藏. 出错是指, 没找到配套的括号.
+  ) {
+    var
+       ls_cSignB, ls_RegExp, ls_iCount, ls_iIndex, ls_zarr, ls_arrA, ls_arrB;
+
+     ls_arrA = ['(', '[', '{', '<'],
+     ls_arrB = [')', ']', '}', '>'];
+       
+    //取配对的括号.
+    ar_cSignA = ar_cSignA || '(';
+    ls_cSignB = ls_arrB[ls_arrA.indexOf(ar_cSignA)];
+    
+    //构造正则表达式.
+    ls_RegExp = new RegExp("[\\" + ar_cSignA + "\\" + ls_cSignB + "]", "g");
+    //注: 已经确定是那一种类的括号(假如是"("和")"). 目前是要定位"("或者")", 所以用 /[\(\)]/g 这样的正则表达式. 要找的
+    //    "字符集"是"("或者")".
+  
+    ls_iCount = 0;
+    ls_iIndex = -1;
+    ls_zarr = ls_RegExp.exec(ar_cText);
+    while (ls_zarr !== null) {
+      if (ar_cSignA === ls_zarr[0]) { ls_iCount = ls_iCount + 1; }
+      else if (ls_cSignB === ls_zarr[0]) { ls_iCount = ls_iCount - 1; }
+      
+      if (ls_iCount === 0) {
+        ls_iIndex = ls_RegExp.lastIndex;
+        break; //正常出口.
+      }
+      
+      ls_zarr = ls_RegExp.exec(ar_cText);
+    }
+    // 注: ls_zarr === null 是异常. 就是在文本中没有找到括号.
+    
+    if ((ar_hidden_error === undefined) && (ls_zarr === null)) { alert('对于"'+ar_cSignA+'", 没有匹配的括号"'+ls_cSignB+'".'); }
+    
+    return ls_iIndex;
+  } // f_PairSign()
