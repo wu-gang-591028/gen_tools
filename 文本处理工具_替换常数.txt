@@ -1,0 +1,11 @@
+1. 订制替换. 表定义文本替换常数. key是正则表达式, value是替换值. 
+([
+{'key':/\s*NONCLUSTERED\s*\n*/, 'value':' '},
+{'key':/\s*CLUSTERED\s*\n*/, 'value':' '},
+{'key':/\s+ASC\s+/, 'value':''},
+{'key':/WITH \(PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON\) ON \[PRIMARY\]/, 'value':''},
+{'key':/ ON \[PRIMARY\] TEXTIMAGE_ON \[PRIMARY\]/, 'value':''},
+{'key':/ ON \[PRIMARY\]/, 'value':''},
+{'key':/^GO\n/mg, 'value':''},
+{'key':/(PRIMARY KEY \()(\n\s+)/mg, 'value':'$1'}
+])
