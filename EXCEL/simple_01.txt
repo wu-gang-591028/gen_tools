@@ -1,1 +1,37 @@
 1
+Sub Macro5()
+
+  ' 让合并区域中所有单元格的值都与左上角的相同.
+  ' *. 遍历行, 列. 寻找合并的区域. 当找到一个合并区域后, 先得到左上角坐标. 然后顺着行找右边界, 找到右边界后再顺着列找下边界.
+  ' *. top_row = 0, 表示还没有找到合并区域. top_row > 0 表示找到了合并区域, 并用 top_row, left_col 记录左上角坐标.
+  ' *.
+  Dim i_row, j_col, k As Integer
+  Dim top_row, left_col, down_row, right_col As Integer
+
+  For i_row = 1 To 2048 '行
+    For j_col = 1 To 64 '列
+      If top_row = 0 And Cells(i_row, j_col).MergeCells = True Then
+        top_row = i_row
+        left_col = j_col
+      End If
+
+      If top_row > 0 And Cells(i_row, j_col).MergeCells = False Then ' 借助 J 循环找右边界.
+        right_col = j_col - 1
+        For k = i_row To 500 ' 用 K 循环找下边界.
+          If Cells(k, right_col).MergeCells = False Then
+            down_row = k - 1
+            Cells(top_row, left_col).MergeCells = False
+            Range(Cells(top_row, left_col), Cells(down_row, right_col)).Value = Cells(top_row, left_col).Value
+
+            Exit For
+          End If
+        Next k
+        top_row = 0
+        left_col = 0
+        down_row = 0
+        right_col = 0
+      End If
+    Next j_col
+  Next i_row
+
+End Sub
