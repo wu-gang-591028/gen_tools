@@ -1,4 +1,5 @@
 ' 问题: 两个合并区域连在一起时, 区分不出来.
+' 一个区域的特征是, 只有左上角的单元格有值. 注: 如果是一个空白区域, 又没有办法了.
 Sub Macro5()
 
   ' 让合并区域中所有单元格的值都与左上角的相同.
@@ -23,6 +24,48 @@ Sub Macro5()
             Cells(top_row, left_col).MergeCells = False
             Range(Cells(top_row, left_col), Cells(down_row, right_col)).Value = Cells(top_row, left_col).Value
 
+            Exit For
+          End If
+        Next k
+        top_row = 0
+        left_col = 0
+        down_row = 0
+        right_col = 0
+      End If
+    Next j_col
+  Next i_row
+
+End Sub
+
+Sub Macro6()
+  ' 找右边界时, 加了一个非空的条件. 即: 虽然有合并属性, 但有值.
+  ' 找下边界时, 也加一个非空条件, 同时, 是整行向下找.
+  Dim i_row, j_col, k, m As Integer
+  Dim top_row, left_col, down_row, right_col As Integer
+  Dim i_flag As Integer
+
+  For i_row = 1 To 2048 '行
+    For j_col = 1 To 64 '列
+      If top_row = 0 And Cells(i_row, j_col).MergeCells = True Then
+        top_row = i_row
+        left_col = j_col
+      End If
+
+      If top_row > 0 And (((Cells(i_row, j_col).MergeCells = True) and (Cells(i_row, j_col).Value <> "")) or (Cells(i_row, j_col).MergeCells = False)) Then ' 借助 J 循环找右边界.
+        right_col = j_col - 1
+        i_flag = 0
+        For k = i_row + 1 To 500 ' 用 K 循环找下边界.
+          For m = left_col To right_col
+            If (((Cells(k, m).MergeCells = True) and (Cells(k, m).Value <> "")) or (Cells(k, m).MergeCells = False)) Then
+              down_row = k - 1
+              Cells(top_row, left_col).MergeCells = False
+              Range(Cells(top_row, left_col), Cells(down_row, right_col)).Value = Cells(top_row, left_col).Value
+              i_flag = 1
+
+              Exit For
+            End If
+          Next m
+          If (i_flag = 1) Then
             Exit For
           End If
         Next k
