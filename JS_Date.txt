@@ -1,0 +1,12 @@
+// 日期格式化.
+(function (ar_Option) {
+  var
+    ls_date = new Date(),
+    ls_format = 'a年b月c日';
+  
+  ls_format = ls_format
+    .replace('a', ls_date.getFullYear())
+    .replace('b', ('0' + (ls_date.getMonth() + 1)).slice(-2))
+    .replace('c', ('0' + ls_date.getDate()).slice(-2));
+  alert(ls_format);
+ })()
